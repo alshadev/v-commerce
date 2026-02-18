@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/VCommerce.Api/VCommerce.Api.csproj" />
+    <Project Path="src/VCommerce.Application/VCommerce.Application.csproj" />
+    <Project Path="src/VCommerce.Domain/VCommerce.Domain.csproj" />
+    <Project Path="src/VCommerce.Infrastructure/VCommerce.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/VCommerce.Tests.Unit/VCommerce.Tests.Unit.csproj" />
+  </Folder>
+</Solution>
