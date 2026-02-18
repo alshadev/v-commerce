@@ -1,12 +1,9 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/VCommerce.Api/VCommerce.Api.csproj" />
+    <Project Path="src/VCommerce.Application/VCommerce.Application.csproj" />
+    <Project Path="src/VCommerce.Domain/VCommerce.Domain.csproj" />
     <Project Path="src/VCommerce.Infrastructure/VCommerce.Infrastructure.csproj" />
-    <Project Path="src/VCommerce.Shared/VCommerce.Shared.csproj" />
-  </Folder>
-  <Folder Name="/src/Modules/" />
-  <Folder Name="/src/Modules/Products/">
-    <Project Path="src/Modules/Products/VCommerce.Modules.Products.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/VCommerce.Tests.Unit/VCommerce.Tests.Unit.csproj" />

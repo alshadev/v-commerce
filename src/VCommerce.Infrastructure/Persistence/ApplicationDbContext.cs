@@ -1,11 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using VCommerce.Application.Common.Interfaces;
 
 namespace VCommerce.Infrastructure.Persistence;
 
 /// <summary>
-/// Main application DbContext
+/// Main application DbContext implementing Clean Architecture principles
 /// </summary>
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : DbContext, IApplicationDbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -16,19 +17,7 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         
-        // Apply configurations from all assemblies
+        // Apply configurations from Infrastructure assembly
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-    }
-    
-    /// <summary>
-    /// Configure model from external assemblies
-    /// </summary>
-    public void ApplyModuleConfigurations(params System.Reflection.Assembly[] assemblies)
-    {
-        var modelBuilder = new ModelBuilder();
-        foreach (var assembly in assemblies)
-        {
-            modelBuilder.ApplyConfigurationsFromAssembly(assembly);
-        }
     }
 }

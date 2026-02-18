@@ -1,5 +1,5 @@
 using FluentAssertions;
-using VCommerce.Modules.Products.Domain.Entities;
+using VCommerce.Domain.Products;
 
 namespace VCommerce.Tests.Unit.Products.Domain;
 

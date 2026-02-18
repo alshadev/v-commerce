@@ -1,9 +1,9 @@
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using VCommerce.Application.Products.Commands.CreateProduct;
+using VCommerce.Domain.Products;
 using VCommerce.Infrastructure.Persistence;
-using VCommerce.Modules.Products.Domain.Entities;
-using VCommerce.Modules.Products.Features.CreateProduct;
-using VCommerce.Modules.Products.Persistence.Configurations;
+using VCommerce.Infrastructure.Persistence.Configurations;
 
 namespace VCommerce.Tests.Unit.Products.Features;
 
@@ -15,11 +15,7 @@ public class CreateProductCommandHandlerTests
             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
-        var context = new ApplicationDbContext(options);
-        
-        // Manually apply the Product configuration
-        context.Model.GetEntityTypes();
-        
+        var context = new TestApplicationDbContext(options);
         return context;
     }
 
@@ -48,7 +44,7 @@ public class CreateProductCommandHandlerTests
             .Options;
         
         await using var context = new TestApplicationDbContext(options);
-        var handler = new CreateProductCommandHandler(context);
+        var handler = new CreateProductCommandHandler(context, context);
         var command = new CreateProductCommand("Test Product", "Description", 99.99m, 10);
 
         // Act
@@ -82,7 +78,7 @@ public class CreateProductCommandHandlerTests
             .Options;
         
         await using var context = new TestApplicationDbContext(options);
-        var handler = new CreateProductCommandHandler(context);
+        var handler = new CreateProductCommandHandler(context, context);
         var command = new CreateProductCommand("", "Description", 99.99m, 10);
 
         // Act
@@ -102,7 +98,7 @@ public class CreateProductCommandHandlerTests
             .Options;
         
         await using var context = new TestApplicationDbContext(options);
-        var handler = new CreateProductCommandHandler(context);
+        var handler = new CreateProductCommandHandler(context, context);
         var command = new CreateProductCommand("Test Product", "Description", -10m, 10);
 
         // Act
@@ -122,7 +118,7 @@ public class CreateProductCommandHandlerTests
             .Options;
         
         await using var context = new TestApplicationDbContext(options);
-        var handler = new CreateProductCommandHandler(context);
+        var handler = new CreateProductCommandHandler(context, context);
         var command = new CreateProductCommand("Test Product", "Description", 99.99m, -5);
 
         // Act

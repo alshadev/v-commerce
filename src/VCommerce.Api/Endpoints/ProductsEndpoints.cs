@@ -1,10 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using VCommerce.Modules.Products.Features.CreateProduct;
-using VCommerce.Modules.Products.Features.DeleteProduct;
-using VCommerce.Modules.Products.Features.GetProduct;
-using VCommerce.Modules.Products.Features.GetProducts;
-using VCommerce.Modules.Products.Features.UpdateProduct;
+using VCommerce.Application.Products.Commands.CreateProduct;
+using VCommerce.Application.Products.Commands.DeleteProduct;
+using VCommerce.Application.Products.Commands.UpdateProduct;
+using VCommerce.Application.Products.Queries.GetProduct;
+using VCommerce.Application.Products.Queries.GetProducts;
 
 namespace VCommerce.Api.Endpoints;
 

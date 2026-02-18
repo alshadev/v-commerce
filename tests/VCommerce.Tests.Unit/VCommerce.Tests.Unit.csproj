@@ -21,8 +21,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Modules\Products\VCommerce.Modules.Products.csproj" />
-    <ProjectReference Include="..\..\src\VCommerce.Shared\VCommerce.Shared.csproj" />
+    <ProjectReference Include="..\..\src\VCommerce.Domain\VCommerce.Domain.csproj" />
+    <ProjectReference Include="..\..\src\VCommerce.Application\VCommerce.Application.csproj" />
+    <ProjectReference Include="..\..\src\VCommerce.Infrastructure\VCommerce.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

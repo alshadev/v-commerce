@@ -1,39 +1,74 @@
 # VCommerce Architecture and Coding Guidelines
 
 ## Project Overview
-VCommerce is an eCommerce platform built with .NET 10 following a **Modular Monolithic** architecture combined with **Vertical Slice Architecture**, **CQRS**, and **Domain-Driven Design** principles.
+VCommerce is an eCommerce platform built with .NET 10 following **Clean Architecture** principles combined with **Vertical Slice Architecture**, **CQRS**, and **Domain-Driven Design** (pragmatic DDD).
 
 ## Architecture Patterns
 
-### 1. Modular Monolithic Architecture
-- The application is organized into self-contained modules
-- Each module represents a bounded context in DDD terms
-- Modules are located in `src/Modules/{ModuleName}`
-- Modules communicate through shared abstractions and interfaces
-- Each module has its own domain, features, and persistence configurations
+### 1. Clean Architecture
+The application follows Clean Architecture (also known as Onion Architecture or Hexagonal Architecture) with clear separation of concerns and dependency inversion:
 
-**Current Modules:**
-- **Products**: Manages product catalog, inventory, and product operations
+**Layer Structure (Dependencies point inward):**
+- **Domain** (Core/Innermost) - No dependencies
+- **Application** - Depends on Domain
+- **Infrastructure** - Depends on Application & Domain
+- **API** (Presentation/Outermost) - Depends on all layers
+
+**Key Principles:**
+- Dependencies flow inward toward the domain
+- Domain layer has no external dependencies
+- Business rules are encapsulated in the domain
+- Application layer orchestrates domain objects
+- Infrastructure implements interfaces defined in Application
+- API layer is thin and delegates to Application layer
+
+**Project Structure:**
+```
+src/
+├── VCommerce.Domain/              # Core domain layer (no dependencies)
+│   ├── Products/
+│   │   └── Product.cs            # Domain entities
+│   └── Common/
+│       └── Result.cs             # Domain primitives
+├── VCommerce.Application/         # Application layer (depends on Domain)
+│   ├── Common/
+│   │   ├── Abstractions/CQRS/   # CQRS interfaces
+│   │   └── Interfaces/          # Infrastructure interfaces (DI)
+│   └── Products/
+│       ├── Commands/            # Use cases (commands)
+│       └── Queries/             # Use cases (queries)
+├── VCommerce.Infrastructure/      # Infrastructure layer (depends on Application)
+│   └── Persistence/
+│       ├── ApplicationDbContext.cs
+│       └── Configurations/      # EF Core configurations
+└── VCommerce.Api/                # Presentation layer (depends on all)
+    ├── Endpoints/               # Minimal API endpoints
+    └── Program.cs
+```
 
 ### 2. Vertical Slice Architecture
 - Features are organized by use case rather than technical layers
-- Each feature contains all the code needed to execute that specific use case
-- Features are located in `src/Modules/{ModuleName}/Features/{FeatureName}`
+- Each feature is a vertical slice containing everything needed for that use case
+- Features are located in `Application/Products/{Commands|Queries}/{FeatureName}`
 - Each feature folder contains:
-  - Command/Query definitions
-  - Handler implementations
+  - Command/Query definition
+  - Handler implementation
   - DTOs specific to that feature
   - Validators (if needed)
 
 **Example:**
 ```
-src/Modules/Products/Features/
-├── CreateProduct/
-│   └── CreateProductCommand.cs (Command + Handler)
-├── GetProduct/
-│   └── GetProductQuery.cs (Query + Handler + DTO)
-└── UpdateProduct/
-    └── UpdateProductCommand.cs (Command + Handler)
+Application/Products/
+├── Commands/
+│   ├── CreateProduct/
+│   │   └── CreateProductCommand.cs (Command + Handler)
+│   └── UpdateProduct/
+│       └── UpdateProductCommand.cs (Command + Handler)
+└── Queries/
+    ├── GetProduct/
+    │   └── GetProductQuery.cs (Query + Handler + DTO)
+    └── GetProducts/
+        └── GetProductsQuery.cs (Query + Handler)
 ```
 
 ### 3. CQRS (Command Query Responsibility Segregation)
@@ -48,6 +83,170 @@ src/Modules/Products/Features/
 ```csharp
 public record CreateProductCommand(string Name, string Description, decimal Price, int Stock) 
     : ICommand<Result<Guid>>;
+
+public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand, Result<Guid>>
+{
+    private readonly IApplicationDbContext _context;
+    private readonly DbContext _dbContext;
+    
+    public CreateProductCommandHandler(IApplicationDbContext context, DbContext dbContext)
+    {
+        _context = context;
+        _dbContext = dbContext;
+    }
+    
+    public async Task<Result<Guid>> Handle(CreateProductCommand request, CancellationToken ct)
+    {
+        var product = Product.Create(request.Name, request.Description, request.Price, request.Stock);
+        _dbContext.Set<Product>().Add(product);
+        await _context.SaveChangesAsync(ct);
+        return Result.Success(product.Id);
+    }
+}
+```
+
+**Query Example:**
+```csharp
+public record GetProductQuery(Guid Id) : IQuery<Result<ProductDto>>;
+
+public class GetProductQueryHandler : IQueryHandler<GetProductQuery, Result<ProductDto>>
+{
+    private readonly DbContext _context;
+    
+    public GetProductQueryHandler(DbContext context)
+    {
+        _context = context;
+    }
+    
+    public async Task<Result<ProductDto>> Handle(GetProductQuery request, CancellationToken ct)
+    {
+        var product = await _context.Set<Product>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.Id, ct);
+            
+        if (product == null)
+            return Result.Failure<ProductDto>($"Product with ID {request.Id} not found");
+            
+        return Result.Success(new ProductDto(product.Id, product.Name, ...));
+    }
+}
+```
+
+### 4. Domain-Driven Design (Pragmatic DDD)
+- **Pragmatic DDD**: We apply DDD principles pragmatically, especially for simple CRUD operations
+- **Entities**: Rich domain models with business logic encapsulated
+- **Value Objects**: Used when appropriate for immutable domain concepts
+- **Aggregates**: Entity clusters that maintain consistency boundaries
+- **Domain Events**: (To be implemented as needed)
+
+**Entity Guidelines:**
+```csharp
+// Domain/Products/Product.cs
+namespace VCommerce.Domain.Products;
+
+public class Product
+{
+    public Guid Id { get; private set; }
+    public string Name { get; private set; }
+    
+    // Private constructor for EF Core
+    private Product() { }
+    
+    // Factory method for creation
+    public static Product Create(string name, ...)
+    {
+        // Validation
+        // Business rules
+        return new Product { ... };
+    }
+    
+    // Business logic methods
+    public void Update(string name, ...)
+    {
+        // Validation
+        // Business rules
+    }
+}
+```
+
+**Key DDD Principles:**
+- Use factory methods for entity creation
+- Encapsulate business logic within entities
+- Use private setters to protect invariants
+- Validate domain rules at the entity level
+- Keep entities anemic only for simple CRUD when justified
+
+## Dependency Inversion Principle
+
+Clean Architecture enforces the Dependency Inversion Principle:
+
+**Application Layer defines interfaces:**
+```csharp
+// Application/Common/Interfaces/IApplicationDbContext.cs
+namespace VCommerce.Application.Common.Interfaces;
+
+public interface IApplicationDbContext
+{
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+}
+```
+
+**Infrastructure Layer implements interfaces:**
+```csharp
+// Infrastructure/Persistence/ApplicationDbContext.cs
+namespace VCommerce.Infrastructure.Persistence;
+
+public class ApplicationDbContext : DbContext, IApplicationDbContext
+{
+    // Implementation
+}
+```
+
+**Registration in API (Presentation) layer:**
+```csharp
+// VCommerce.Api/Program.cs
+builder.Services.AddDbContext<ApplicationDbContext>(options => ...);
+builder.Services.AddScoped<IApplicationDbContext>(provider => 
+    provider.GetRequiredService<ApplicationDbContext>());
+```
+
+## Project Structure
+
+```
+/
+├── src/
+│   ├── VCommerce.Api/                  # API entry point (Minimal APIs)
+│   │   ├── Endpoints/                  # Minimal API endpoints
+│   │   └── Program.cs
+│   ├── VCommerce.Domain/               # Domain layer (NO dependencies)
+│   │   ├── Products/                   # Product aggregate
+│   │   │   └── Product.cs
+│   │   └── Common/                     # Domain primitives
+│   │       └── Result.cs
+│   ├── VCommerce.Application/          # Application layer (depends on Domain)
+│   │   ├── Common/
+│   │   │   ├── Abstractions/CQRS/     # CQRS abstractions
+│   │   │   └── Interfaces/            # Infrastructure interfaces
+│   │   └── Products/                   # Product use cases
+│   │       ├── Commands/
+│   │       │   ├── CreateProduct/
+│   │       │   ├── UpdateProduct/
+│   │       │   └── DeleteProduct/
+│   │       └── Queries/
+│   │           ├── GetProduct/
+│   │           └── GetProducts/
+│   └── VCommerce.Infrastructure/       # Infrastructure layer
+│       └── Persistence/
+│           ├── ApplicationDbContext.cs
+│           └── Configurations/         # EF Core configurations
+├── tests/
+│   └── VCommerce.Tests.Unit/           # Unit tests
+│       └── Products/
+│           ├── Domain/                 # Domain logic tests
+│           └── Features/               # Handler tests
+└── .github/
+    └── copilot-instructions.md
+```
 
 public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand, Result<Guid>>
 {

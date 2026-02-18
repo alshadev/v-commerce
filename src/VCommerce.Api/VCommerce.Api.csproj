@@ -16,9 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VCommerce.Shared\VCommerce.Shared.csproj" />
     <ProjectReference Include="..\VCommerce.Infrastructure\VCommerce.Infrastructure.csproj" />
-    <ProjectReference Include="..\Modules\Products\VCommerce.Modules.Products.csproj" />
+    <ProjectReference Include="..\VCommerce.Application\VCommerce.Application.csproj" />
   </ItemGroup>
 
 </Project>
