@@ -143,4 +143,34 @@ public class ProductTests
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("Insufficient stock");
     }
+
+    [Fact]
+    public void Delete_ShouldMarkProductAsDeleted_WhenProductIsNotDeleted()
+    {
+        // Arrange
+        var product = Product.Create("Test Product", "Description", 100m, 10);
+
+        // Act
+        product.Delete();
+
+        // Assert
+        product.IsDeleted.Should().BeTrue();
+        product.DeletedAt.Should().NotBeNull();
+        product.DeletedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void Delete_ShouldThrowInvalidOperationException_WhenProductIsAlreadyDeleted()
+    {
+        // Arrange
+        var product = Product.Create("Test Product", "Description", 100m, 10);
+        product.Delete();
+
+        // Act
+        var act = () => product.Delete();
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("Product is already deleted");
+    }
 }
