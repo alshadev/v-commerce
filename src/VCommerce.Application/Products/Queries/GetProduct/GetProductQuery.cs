@@ -39,7 +39,7 @@ public class GetProductQueryHandler : IQueryHandler<GetProductQuery, Result<Prod
     {
         var product = await _context.Set<Product>()
             .AsNoTracking()
-            .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+            .FirstOrDefaultAsync(p => p.Id == request.Id && !p.IsDeleted, cancellationToken);
 
         if (product == null)
             return Result.Failure<ProductDto>($"Product with ID {request.Id} not found");

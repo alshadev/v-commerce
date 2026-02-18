@@ -30,12 +30,12 @@ public class DeleteProductCommandHandler : ICommandHandler<DeleteProductCommand,
         try
         {
             var product = await _dbContext.Set<Product>()
-                .FirstOrDefaultAsync(p => p.Id == request.Id, cancellationToken);
+                .FirstOrDefaultAsync(p => p.Id == request.Id && !p.IsDeleted, cancellationToken);
 
             if (product == null)
                 return Result.Failure($"Product with ID {request.Id} not found");
 
-            _dbContext.Set<Product>().Remove(product);
+            product.Delete();
             await _context.SaveChangesAsync(cancellationToken);
 
             return Result.Success();
