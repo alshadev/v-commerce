@@ -12,6 +12,8 @@ public class Product
     public int Stock { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? UpdatedAt { get; private set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
 
     // Parameterless constructor for EF Core
     private Product() { }
@@ -66,5 +68,15 @@ public class Product
 
         Stock += quantity;
         UpdatedAt = DateTime.UtcNow;
+    }
+
+    // Business logic method for soft deleting product
+    public void Delete()
+    {
+        if (IsDeleted)
+            throw new InvalidOperationException("Product is already deleted");
+
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
     }
 }

@@ -27,6 +27,7 @@ public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Result<IE
     {
         var products = await _context.Set<Product>()
             .AsNoTracking()
+            .Where(p => !p.IsDeleted)
             .Select(p => new ProductDto(
                 p.Id,
                 p.Name,

@@ -114,7 +114,7 @@ public static class ProductsEndpoints
         var result = await mediator.Send(command, cancellationToken);
 
         return result.IsSuccess
-            ? Results.NoContent()
+            ? Results.Ok(new { message = "Product deleted successfully" })
             : Results.NotFound(new { error = result.Error });
     }
 }
