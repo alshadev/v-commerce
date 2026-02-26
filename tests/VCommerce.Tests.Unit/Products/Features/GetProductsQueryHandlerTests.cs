@@ -53,10 +53,10 @@ public class GetProductsQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().HaveCount(2);
-        result.Value.Should().Contain(p => p.Name == "Product 1");
-        result.Value.Should().Contain(p => p.Name == "Product 3");
-        result.Value.Should().NotContain(p => p.Name == "Product 2");
+        result.Value!.TotalItems.Should().Be(2);
+        result.Value.Items.Should().Contain(p => p.Name == "Product 1");
+        result.Value.Items.Should().Contain(p => p.Name == "Product 3");
+        result.Value.Items.Should().NotContain(p => p.Name == "Product 2");
     }
 
     [Fact]
@@ -87,6 +87,67 @@ public class GetProductsQueryHandlerTests
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().BeEmpty();
+        result.Value!.Items.Should().BeEmpty();
+        result.Value.TotalItems.Should().Be(0);
+        result.Value.TotalPages.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnCorrectPage_WhenPaginationIsApplied()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new TestApplicationDbContext(options);
+
+        for (int i = 1; i <= 15; i++)
+        {
+            context.Set<Product>().Add(
+                Product.Create($"PROD{i:D3}", $"Product {i}", $"Description {i}", i * 10m, i));
+        }
+        await context.SaveChangesAsync();
+
+        var handler = new GetProductsQueryHandler(context);
+        var query = new GetProductsQuery(Page: 2, PageSize: 5);
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.TotalItems.Should().Be(15);
+        result.Value.TotalPages.Should().Be(3);
+        result.Value.Page.Should().Be(2);
+        result.Value.PageSize.Should().Be(5);
+        result.Value.Items.Should().HaveCount(5);
+    }
+
+    [Fact]
+    public async Task Handle_ShouldReturnOnlyCodeAndName_InListItems()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+            .Options;
+
+        await using var context = new TestApplicationDbContext(options);
+
+        var product = Product.Create("PROD001", "Product 1", "Description 1", 10m, 5);
+        context.Set<Product>().Add(product);
+        await context.SaveChangesAsync();
+
+        var handler = new GetProductsQueryHandler(context);
+        var query = new GetProductsQuery();
+
+        // Act
+        var result = await handler.Handle(query, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        var item = result.Value!.Items.Single();
+        item.Code.Should().Be("PROD001");
+        item.Name.Should().Be("Product 1");
     }
 }
