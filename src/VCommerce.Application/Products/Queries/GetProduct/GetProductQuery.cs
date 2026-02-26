@@ -15,6 +15,7 @@ public record GetProductQuery(Guid Id) : IQuery<Result<ProductDto>>;
 /// </summary>
 public record ProductDto(
     Guid Id,
+    string Code,
     string Name,
     string Description,
     decimal Price,
@@ -46,6 +47,7 @@ public class GetProductQueryHandler : IQueryHandler<GetProductQuery, Result<Prod
 
         var dto = new ProductDto(
             product.Id,
+            product.Code,
             product.Name,
             product.Description,
             product.Price,

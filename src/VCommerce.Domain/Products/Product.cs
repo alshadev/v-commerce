@@ -6,6 +6,7 @@ namespace VCommerce.Domain.Products;
 public class Product
 {
     public Guid Id { get; private set; }
+    public string Code { get; private set; } = string.Empty;
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public decimal Price { get; private set; }
@@ -19,11 +20,20 @@ public class Product
     private Product() { }
 
     // Factory method for creating new products
-    public static Product Create(string name, string description, decimal price, int stock)
+    public static Product Create(string code, string name, string description, decimal price, int stock)
     {
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Code cannot be empty", nameof(code));
+
+        if (code.Length > 20)
+            throw new ArgumentException("Code cannot exceed 20 characters", nameof(code));
+
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Name cannot be empty", nameof(name));
-        
+
+        if (name.Length > 50)
+            throw new ArgumentException("Name cannot exceed 50 characters", nameof(name));
+
         if (price < 0)
             throw new ArgumentException("Price cannot be negative", nameof(price));
         
@@ -33,6 +43,7 @@ public class Product
         return new Product
         {
             Id = Guid.NewGuid(),
+            Code = code,
             Name = name,
             Description = description,
             Price = price,

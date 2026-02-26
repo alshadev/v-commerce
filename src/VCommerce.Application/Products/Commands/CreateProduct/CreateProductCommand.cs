@@ -10,6 +10,7 @@ namespace VCommerce.Application.Products.Commands.CreateProduct;
 /// Command to create a new product
 /// </summary>
 public record CreateProductCommand(
+    string Code,
     string Name,
     string Description,
     decimal Price,
@@ -34,7 +35,15 @@ public class CreateProductCommandHandler : ICommandHandler<CreateProductCommand,
     {
         try
         {
+            var codeExists = await _dbContext.Set<Product>()
+                .AsNoTracking()
+                .AnyAsync(p => p.Code == request.Code && !p.IsDeleted, cancellationToken);
+
+            if (codeExists)
+                return Result.Failure<Guid>($"A product with code '{request.Code}' already exists");
+
             var product = Product.Create(
+                request.Code,
                 request.Name,
                 request.Description,
                 request.Price,

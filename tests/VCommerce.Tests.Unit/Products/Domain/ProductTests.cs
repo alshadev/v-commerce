@@ -9,22 +9,46 @@ public class ProductTests
     public void Create_ShouldCreateProduct_WithValidData()
     {
         // Arrange
+        var code = "PROD001";
         var name = "Test Product";
         var description = "Test Description";
         var price = 99.99m;
         var stock = 10;
 
         // Act
-        var product = Product.Create(name, description, price, stock);
+        var product = Product.Create(code, name, description, price, stock);
 
         // Assert
         product.Should().NotBeNull();
         product.Id.Should().NotBeEmpty();
+        product.Code.Should().Be(code);
         product.Name.Should().Be(name);
         product.Description.Should().Be(description);
         product.Price.Should().Be(price);
         product.Stock.Should().Be(stock);
         product.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
+    public void Create_ShouldThrowArgumentException_WhenCodeIsEmpty()
+    {
+        // Arrange & Act
+        var act = () => Product.Create("", "Test Product", "Test Description", 99.99m, 10);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Code cannot be empty*");
+    }
+
+    [Fact]
+    public void Create_ShouldThrowArgumentException_WhenCodeExceedsMaxLength()
+    {
+        // Arrange & Act
+        var act = () => Product.Create("TOOLONGCODE123456789X", "Test Product", "Test Description", 99.99m, 10);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Code cannot exceed 20 characters*");
     }
 
     [Fact]
@@ -37,11 +61,22 @@ public class ProductTests
         var stock = 10;
 
         // Act
-        var act = () => Product.Create(name, description, price, stock);
+        var act = () => Product.Create("PROD001", name, description, price, stock);
 
         // Assert
         act.Should().Throw<ArgumentException>()
             .WithMessage("Name cannot be empty*");
+    }
+
+    [Fact]
+    public void Create_ShouldThrowArgumentException_WhenNameExceedsMaxLength()
+    {
+        // Arrange & Act
+        var act = () => Product.Create("PROD001", new string('A', 51), "Test Description", 99.99m, 10);
+
+        // Assert
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("Name cannot exceed 50 characters*");
     }
 
     [Fact]
@@ -54,7 +89,7 @@ public class ProductTests
         var stock = 10;
 
         // Act
-        var act = () => Product.Create(name, description, price, stock);
+        var act = () => Product.Create("PROD001", name, description, price, stock);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -71,7 +106,7 @@ public class ProductTests
         var stock = -5;
 
         // Act
-        var act = () => Product.Create(name, description, price, stock);
+        var act = () => Product.Create("PROD001", name, description, price, stock);
 
         // Assert
         act.Should().Throw<ArgumentException>()
@@ -82,7 +117,7 @@ public class ProductTests
     public void Update_ShouldUpdateProduct_WithValidData()
     {
         // Arrange
-        var product = Product.Create("Original Name", "Original Description", 50m, 5);
+        var product = Product.Create("PROD001", "Original Name", "Original Description", 50m, 5);
         var newName = "Updated Name";
         var newDescription = "Updated Description";
         var newPrice = 75m;
@@ -104,7 +139,7 @@ public class ProductTests
     public void AdjustStock_ShouldIncreaseStock_WhenQuantityIsPositive()
     {
         // Arrange
-        var product = Product.Create("Test Product", "Description", 100m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 100m, 10);
         var quantity = 5;
 
         // Act
@@ -119,7 +154,7 @@ public class ProductTests
     public void AdjustStock_ShouldDecreaseStock_WhenQuantityIsNegative()
     {
         // Arrange
-        var product = Product.Create("Test Product", "Description", 100m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 100m, 10);
         var quantity = -3;
 
         // Act
@@ -133,7 +168,7 @@ public class ProductTests
     public void AdjustStock_ShouldThrowInvalidOperationException_WhenResultingStockIsNegative()
     {
         // Arrange
-        var product = Product.Create("Test Product", "Description", 100m, 5);
+        var product = Product.Create("PROD001", "Test Product", "Description", 100m, 5);
         var quantity = -10;
 
         // Act
@@ -148,7 +183,7 @@ public class ProductTests
     public void Delete_ShouldMarkProductAsDeleted_WhenProductIsNotDeleted()
     {
         // Arrange
-        var product = Product.Create("Test Product", "Description", 100m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 100m, 10);
 
         // Act
         product.Delete();
@@ -163,7 +198,7 @@ public class ProductTests
     public void Delete_ShouldThrowInvalidOperationException_WhenProductIsAlreadyDeleted()
     {
         // Arrange
-        var product = Product.Create("Test Product", "Description", 100m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 100m, 10);
         product.Delete();
 
         // Act

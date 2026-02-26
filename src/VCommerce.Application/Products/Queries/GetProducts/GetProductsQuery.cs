@@ -30,6 +30,7 @@ public class GetProductsQueryHandler : IQueryHandler<GetProductsQuery, Result<IE
             .Where(p => !p.IsDeleted)
             .Select(p => new ProductDto(
                 p.Id,
+                p.Code,
                 p.Name,
                 p.Description,
                 p.Price,
