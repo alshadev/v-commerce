@@ -73,6 +73,7 @@ public static class ProductsEndpoints
         CancellationToken cancellationToken)
     {
         var command = new CreateProductCommand(
+            request.Code,
             request.Name,
             request.Description,
             request.Price,
@@ -120,5 +121,5 @@ public static class ProductsEndpoints
 }
 
 // Request DTOs
-public record CreateProductRequest(string Name, string Description, decimal Price, int Stock);
+public record CreateProductRequest(string Code, string Name, string Description, decimal Price, int Stock);
 public record UpdateProductRequest(string Name, string Description, decimal Price, int Stock);

@@ -36,9 +36,9 @@ public class GetProductsQueryHandlerTests
         await using var context = new TestApplicationDbContext(options);
         
         // Create products - some deleted, some not
-        var product1 = Product.Create("Product 1", "Description 1", 10m, 5);
-        var product2 = Product.Create("Product 2", "Description 2", 20m, 10);
-        var product3 = Product.Create("Product 3", "Description 3", 30m, 15);
+        var product1 = Product.Create("PROD001", "Product 1", "Description 1", 10m, 5);
+        var product2 = Product.Create("PROD002", "Product 2", "Description 2", 20m, 10);
+        var product3 = Product.Create("PROD003", "Product 3", "Description 3", 30m, 15);
         
         product2.Delete(); // Soft delete product2
         
@@ -70,8 +70,8 @@ public class GetProductsQueryHandlerTests
         await using var context = new TestApplicationDbContext(options);
         
         // Create products and delete them all
-        var product1 = Product.Create("Product 1", "Description 1", 10m, 5);
-        var product2 = Product.Create("Product 2", "Description 2", 20m, 10);
+        var product1 = Product.Create("PROD001", "Product 1", "Description 1", 10m, 5);
+        var product2 = Product.Create("PROD002", "Product 2", "Description 2", 20m, 10);
         
         product1.Delete();
         product2.Delete();

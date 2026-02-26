@@ -36,7 +36,7 @@ public class GetProductQueryHandlerTests
         await using var context = new TestApplicationDbContext(options);
         
         // Create a product
-        var product = Product.Create("Test Product", "Description", 99.99m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 99.99m, 10);
         context.Set<Product>().Add(product);
         await context.SaveChangesAsync();
         
@@ -64,7 +64,7 @@ public class GetProductQueryHandlerTests
         await using var context = new TestApplicationDbContext(options);
         
         // Create and delete a product
-        var product = Product.Create("Test Product", "Description", 99.99m, 10);
+        var product = Product.Create("PROD001", "Test Product", "Description", 99.99m, 10);
         product.Delete();
         context.Set<Product>().Add(product);
         await context.SaveChangesAsync();
