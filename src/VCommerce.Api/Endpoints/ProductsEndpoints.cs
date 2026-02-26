@@ -43,10 +43,12 @@ public static class ProductsEndpoints
     }
 
     private static async Task<IResult> GetAllProducts(
+        [FromQuery] int page,
+        [FromQuery] int pageSize,
         [FromServices] IMediator mediator,
         CancellationToken cancellationToken)
     {
-        var query = new GetProductsQuery();
+        var query = new GetProductsQuery(page, pageSize);
         var result = await mediator.Send(query, cancellationToken);
 
         return result.IsSuccess
